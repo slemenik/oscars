@@ -1,0 +1,30 @@
+html, body {
+	height: 100%;
+}
+.app {
+	height: calc(100% - 56px);
+}
+.main {
+	height: calc(100% - 56px);
+}
+.card {
+	overflow:hidden;
+}
+.DragDrop ul[dnd-list] {
+	min-height: 100px;
+	padding-left: 0px;
+	padding-right: 0px;
+}
+.DragDrop ul[dnd-list] .dndDraggingSource {
+	display: none;
+}
+.DragDrop ul[dnd-list] .dndPlaceholder {
+	background-color: #ddd;
+	display: block;
+	min-height: 100px;
+	margin-top: .5rem !important;
+}
+.DragDrop ul[dnd-list] li.selected {
+	background-color: #dff0d8;
+	color: #3c763d;
+}
