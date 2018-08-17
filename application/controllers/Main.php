@@ -8,14 +8,15 @@ class Main extends CI_Controller{
 
     }
 
-    public function index(){
-        header('Content-Type: text/plain');//temp
-        $data['title_variable'] = "Main";
-        $this->load->view('header_view', $data);
-        //$this->load->view('main_menu_view', $data);
-        // $this->load->view('home_view', $data);
+    private function var_dump($data) {
+        echo '<pre>';
+        var_dump($data);
+        echo '</pre>';
+    }
+
+    public function get_nomenees_per_year($year) {
         $json = file_get_contents("https://api.wolframalpha.com/v2/query" .
-            "?input=Oscar+nominations+1988" .
+            "?input=Oscar+nominations+$year" .
             "&format=plaintext" .
             "&output=JSON" .
             "&appid=8V8KKQ-L2VKTA87YH" .
@@ -28,20 +29,42 @@ class Main extends CI_Controller{
         $result_index = array_search('Academy Award winners and nominees', array_column($pods, 'title'));
         $nominations = $pods [$result_index]->subpods;
 
+//        var_export($nominations);
+//The Man Who Planted Trees
+        $array = array();
         foreach ($nominations as $nomination){
             $category = $nomination->title;
             $plaintext = $nomination->plaintext;
-            $nomineesArray = explode('\n', json_encode($plaintext));
-            $winner = explode('|', $nomineesArray[0])[1];
-            var_dump($winner);
+            $nomineesArray = explode('\n', json_encode($plaintext, JSON_UNESCAPED_UNICODE ));//todo pogle kako je z bazo
+
+//            $this->var_dump($nomineesArray);
+
+            $winnerColumn = explode('|', $nomineesArray[0]);
+            if (count($winnerColumn) <= 1) {
+                continue; //najbrž ni stolpec, ki bi sploh povedal kaj konkretnega
+            }
+            $winner = $winnerColumn[1];
+//            var_dump("$category -- $winner");
+//            var_dump($nomineesArray);
+            $array[$category] = $winner;
+//            var_dump(json_encode($plaintext, JSON_UNESCAPED_SLASHES  ));
+//            var_dump(json_encode($plaintext, JSON_UNESCAPED_UNICODE   ));
+//            var_dump(json_encode($plaintext, JSON_UNESCAPED_LINE_TERMINATORS   ));
+//            var_dump(json_decode($json, false, 512, JSON_UNESCAPED_SLASHES  ));
         }
 //        $states = $nominations->states;
 //        Result__More
+//         var_dump(json_encode($array));
+        header('Content-Type: application/json');
+        echo json_encode($array);
+    }
 
-
-
-
-
+    public function index(){
+//        header('Content-Type: text/plain');//temp
+        $data['title_variable'] = "Main";
+        $this->load->view('header_view', $data);
+        //$this->load->view('main_menu_view', $data);
+        // $this->load->view('home_view', $data);
 
 
         $this->load->view('footer_view');

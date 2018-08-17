@@ -6,21 +6,34 @@ function getBaseUrl() {
 }
 
 console.log(123);
+get(1929);
 
-// $.get(
-//     "https://api.wolframalpha.com/v2/query",
-//     {
-//         input : 'Oscar nominations 1988',
-//         format : 'plaintext',
-//         appid : '8V8KKQ-L2VKTA87YH',
-//         output : 'JSON'
-//     },
-//     function(data) {
-//         console.log(data);
-//
-//         var pods = data.pods;
-//         var b=  pods.find(x => x.title == 'Academy Award winners and nominees');
-//         console.log(b);
-//
-//     }
-// );
+var categories = new Set();
+
+function get(year){
+    $.get(
+        "main/get_nomenees_per_year/" + year,
+        // {
+        // input : 'Oscar nominations 1988',
+        // format : 'plaintext',
+        // appid : '8V8KKQ-L2VKTA87YH',
+        // output : 'JSON'
+        // },
+        function(data) {
+            console.log(year);
+            // console.log(data);
+            properties = Object.keys(data);
+            for (var i = 0; i<properties.length;i++){
+                categories.add(properties[i]);
+            }
+            if (year <= 2018) {
+                year++;
+                get(year);
+            } else {
+                console.log(categories);
+            }
+
+
+        }
+    );
+}
