@@ -5,10 +5,18 @@ function getBaseUrl() {
     return baseUrl;
 }
 
-console.log(123);
-get(1929);
+// console.log(123);
+
 
 var categories = new Set();
+
+function start () {
+    console.log("start");
+    get(1929);
+
+}
+
+
 
 function get(year){
     $.get(
@@ -20,16 +28,18 @@ function get(year){
         // output : 'JSON'
         // },
         function(data) {
-            console.log(year);
+
             // console.log(data);
             properties = Object.keys(data);
             for (var i = 0; i<properties.length;i++){
                 categories.add(properties[i]);
             }
             if (year <= 2018) {
+                console.log(year);
                 year++;
                 get(year);
             } else {
+                console.log(end);
                 console.log(categories);
             }
 

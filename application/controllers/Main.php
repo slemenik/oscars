@@ -25,6 +25,7 @@ class Main extends CI_Controller{
 //        var_dump($json);
         $json_object = json_decode($json);
 
+//        $this->var_dump($json_object);
         $pods = $json_object->queryresult->pods;
         $result_index = array_search('Academy Award winners and nominees', array_column($pods, 'title'));
         $nominations = $pods [$result_index]->subpods;
@@ -44,9 +45,36 @@ class Main extends CI_Controller{
                 continue; //najbrž ni stolpec, ki bi sploh povedal kaj konkretnega
             }
             $winner = $winnerColumn[1];
-//            var_dump("$category -- $winner");
-//            var_dump($nomineesArray);
-            $array[$category] = $winner;
+
+            $indexOfFor = strpos($winner, " for ");
+            $indexOfIn = strpos($winner, " in ");
+            if (!$indexOfFor && !$indexOfIn) {
+                //glavni film?
+                $person = null;
+                $movie = $winner;
+            } elseif ($indexOfFor) {
+                $person = substr($winner, 0, $indexOfFor);
+                $movie = substr($winner, $indexOfFor + strlen(" for "));
+
+                $indexOfIn = strpos($movie, " in "); //narejeno pri pesmih in podobno, da se loči film
+                if ($indexOfIn) {
+                    $movie = substr($movie, $indexOfIn + strlen(" in "));
+                }
+
+            } elseif ($indexOfIn) {
+                $person = substr($winner, 0, $indexOfIn);
+                $movie = substr($winner, $indexOfIn + strlen(" in "));
+            } else {
+                $this->var_dump($indexOfIn);
+                $this->var_dump($indexOfFor);
+
+            }
+
+
+//            $array[$category] = $winner;
+            $array[$category] = array("original" => $winner, "person" => $person, "movie" => $movie);
+
+
 //            var_dump(json_encode($plaintext, JSON_UNESCAPED_SLASHES  ));
 //            var_dump(json_encode($plaintext, JSON_UNESCAPED_UNICODE   ));
 //            var_dump(json_encode($plaintext, JSON_UNESCAPED_LINE_TERMINATORS   ));
@@ -54,9 +82,9 @@ class Main extends CI_Controller{
         }
 //        $states = $nominations->states;
 //        Result__More
-//         var_dump(json_encode($array));
-        header('Content-Type: application/json');
-        echo json_encode($array);
+         $this->var_dump($array);
+//        header('Content-Type: application/json');
+//        echo json_encode($array);
     }
 
     public function index(){
@@ -64,7 +92,7 @@ class Main extends CI_Controller{
         $data['title_variable'] = "Main";
         $this->load->view('header_view', $data);
         //$this->load->view('main_menu_view', $data);
-        // $this->load->view('home_view', $data);
+        $this->load->view('home_view', $data);
 
 
         $this->load->view('footer_view');
