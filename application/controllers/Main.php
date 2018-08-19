@@ -14,7 +14,7 @@ class Main extends CI_Controller{
         echo '</pre>';
     }
 
-    public function get_nomenees_per_year($year) {
+    public function get_nomenees_per_year($year = 1979) {
         $json = file_get_contents("https://api.wolframalpha.com/v2/query" .
             "?input=Oscar+nominations+$year" .
             "&format=plaintext" .
@@ -30,60 +30,67 @@ class Main extends CI_Controller{
         $result_index = array_search('Academy Award winners and nominees', array_column($pods, 'title'));
         $nominations = $pods [$result_index]->subpods;
 
-//        var_export($nominations);
-//The Man Who Planted Trees
         $array = array();
         foreach ($nominations as $nomination){
             $category = $nomination->title;
             $plaintext = $nomination->plaintext;
-            $nomineesArray = explode('\n', json_encode($plaintext, JSON_UNESCAPED_UNICODE ));//todo pogle kako je z bazo
-
-//            $this->var_dump($nomineesArray);
-
-            $winnerColumn = explode('|', $nomineesArray[0]);
-            if (count($winnerColumn) <= 1) {
-                continue; //najbrž ni stolpec, ki bi sploh povedal kaj konkretnega
+//            $this->var_dump($plaintext);
+            if (strpos($plaintext, "\n") === false) { //ni nominarancev, samo zmagovalci
+                $losers = array();
+                $nomineesArray = array($plaintext);
+            } else { //vsaj en nominiranec
+                $nomineesArray = explode('\n', json_encode($plaintext, JSON_UNESCAPED_UNICODE ));//todo pogle kako je z bazo
             }
-            $winner = $winnerColumn[1];
 
-            $indexOfFor = strpos($winner, " for ");
-            $indexOfIn = strpos($winner, " in ");
-            if (!$indexOfFor && !$indexOfIn) {
-                //glavni film?
-                $persons = array();
-                $movie = $winner;
-            } elseif ($indexOfFor) {
-                $persons = trim(substr($winner, 0, $indexOfFor));
-                $persons_array = explode(', ', str_replace(' and ', ', ', $persons));
-                $movie = substr($winner, $indexOfFor + strlen(" for "));
 
-                $indexOfIn = strpos($movie, " in "); //narejeno pri pesmih in podobno, da se loči film
-                if ($indexOfIn) {
-                    $movie = substr($movie, $indexOfIn + strlen(" in "));
+            foreach($nomineesArray as $key => $nomineeColumn) {
+                $nomineeColumnArray = explode('|', $nomineeColumn);
+                if (count($nomineeColumnArray) <= 1) {
+                    continue; //najbrž ni stolpec, ki bi sploh povedal kaj konkretnega
+                }
+                $nominee = $nomineeColumnArray[1];
+
+                $indexOfFor = strpos($nominee, " for ");
+                $indexOfIn = strpos($nominee, " in ");
+                if (!$indexOfFor && !$indexOfIn) {
+                    //glavni film? oz oseba
+                    $persons_array = array();
+                    $movie = $nominee;
+                } elseif ($indexOfFor) {
+                    $persons = trim(substr($nominee, 0, $indexOfFor));
+                    $persons_array = explode(', ', str_replace(' and ', ', ', $persons));
+                    $movie = substr($nominee, $indexOfFor + strlen(" for "));
+
+                    $indexOfIn = strpos($movie, " in "); //narejeno pri pesmih in podobno, da se loči film
+                    if ($indexOfIn) {
+                        $movie = substr($movie, $indexOfIn + strlen(" in "));
+                    }
+
+                } elseif ($indexOfIn) {
+                    $persons = trim(substr($nominee, 0, $indexOfIn));
+                    $persons_array = explode(', ', str_replace(' and ', ', ', $persons));
+                    $movie = substr($nominee, $indexOfIn + strlen(" in "));
+                } else {
+                    $this->var_dump($indexOfIn);
+                    $this->var_dump($indexOfFor);
+
                 }
 
-            } elseif ($indexOfIn) {
-                $persons = trim(substr($winner, 0, $indexOfIn));
-                $persons_array = explode(', ', str_replace(' and ', ', ', $persons));
-                $movie = substr($winner, $indexOfIn + strlen(" in "));
-            } else {
-                $this->var_dump($indexOfIn);
-                $this->var_dump($indexOfFor);
+                //todo ostrani (produced by v filmu
 
+                $type = count($nomineesArray) === 1 || $key === 0 ? 'winner' : 'loser';
+                $array[$category][$key] = array(
+                   // "Aoriginal" => $nominee,
+                    "status" => $type,
+                    "persons" => $persons_array,
+                    "movie" => trim($movie),
+
+                    "year" => $year-1
+                );
             }
 
-
-//            $array[$category] = $winner;
-            $array[$category] = array("original" => $winner, "person" => $persons_array, "movie" => trim($movie));
-
-
-//            var_dump(json_encode($plaintext, JSON_UNESCAPED_SLASHES  ));
-//            var_dump(json_encode($plaintext, JSON_UNESCAPED_UNICODE   ));
-//            var_dump(json_encode($plaintext, JSON_UNESCAPED_LINE_TERMINATORS   ));
-//            var_dump(json_decode($json, false, 512, JSON_UNESCAPED_SLASHES  ));
         }
-//        $states = $nominations->states;
-//        Result__More
+
          $this->var_dump($array);
 //        header('Content-Type: application/json');
 //        echo json_encode($array);
