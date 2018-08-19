@@ -43,7 +43,7 @@ class Main extends CI_Controller{
             }
 
 
-            foreach($nomineesArray as $key => $nomineeColumn) {
+            foreach($nomineesArray as $nomineeColumnKey => $nomineeColumn) {
                 $nomineeColumnArray = explode('|', $nomineeColumn);
                 if (count($nomineeColumnArray) <= 1) {
                     continue; //najbrž ni stolpec, ki bi sploh povedal kaj konkretnega
@@ -73,13 +73,23 @@ class Main extends CI_Controller{
                 } else {
                     $this->var_dump($indexOfIn);
                     $this->var_dump($indexOfFor);
+                    return;
+
+                }
+
+                //združi besedo 'Jr.' z ustrezno osebo
+                foreach ($persons_array as $key2 => $person) {
+                    if ($person === "Jr.") {
+                        $persons_array[$key2-1] = $persons_array[$key2-1] . ", Jr.";
+                        unset($persons_array[$key2]);
+                    }
 
                 }
 
                 //todo ostrani (produced by v filmu
 
-                $type = count($nomineesArray) === 1 || $key === 0 ? 'winner' : 'loser';
-                $array[$category][$key] = array(
+                $type = count($nomineesArray) === 1 || $nomineeColumnKey === 0 ? 'winner' : 'loser';
+                $array[$category][$nomineeColumnKey] = array(
                    // "Aoriginal" => $nominee,
                     "status" => $type,
                     "persons" => $persons_array,
