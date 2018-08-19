@@ -50,10 +50,11 @@ class Main extends CI_Controller{
             $indexOfIn = strpos($winner, " in ");
             if (!$indexOfFor && !$indexOfIn) {
                 //glavni film?
-                $person = null;
+                $persons = array();
                 $movie = $winner;
             } elseif ($indexOfFor) {
-                $person = substr($winner, 0, $indexOfFor);
+                $persons = trim(substr($winner, 0, $indexOfFor));
+                $persons_array = explode(', ', str_replace(' and ', ', ', $persons));
                 $movie = substr($winner, $indexOfFor + strlen(" for "));
 
                 $indexOfIn = strpos($movie, " in "); //narejeno pri pesmih in podobno, da se loči film
@@ -62,7 +63,8 @@ class Main extends CI_Controller{
                 }
 
             } elseif ($indexOfIn) {
-                $person = substr($winner, 0, $indexOfIn);
+                $persons = trim(substr($winner, 0, $indexOfIn));
+                $persons_array = explode(', ', str_replace(' and ', ', ', $persons));
                 $movie = substr($winner, $indexOfIn + strlen(" in "));
             } else {
                 $this->var_dump($indexOfIn);
@@ -72,7 +74,7 @@ class Main extends CI_Controller{
 
 
 //            $array[$category] = $winner;
-            $array[$category] = array("original" => $winner, "person" => $person, "movie" => $movie);
+            $array[$category] = array("original" => $winner, "person" => $persons_array, "movie" => trim($movie));
 
 
 //            var_dump(json_encode($plaintext, JSON_UNESCAPED_SLASHES  ));
@@ -85,6 +87,11 @@ class Main extends CI_Controller{
          $this->var_dump($array);
 //        header('Content-Type: application/json');
 //        echo json_encode($array);
+    }
+
+    private function get_persons_array_from_string($persons) {
+        $persons_array = explode(', ', str_replace($persons, ' and ', ', '));
+
     }
 
     public function index(){
