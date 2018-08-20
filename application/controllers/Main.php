@@ -41,14 +41,14 @@ class Main extends CI_Controller{
             } else { //vsaj en nominiranec
                 $nomineesArray = explode('\n', json_encode($plaintext, JSON_UNESCAPED_UNICODE ));//todo pogle kako je z bazo
             }
-
+//            $this->var_dump($nomineesArray);
 
             foreach($nomineesArray as $nomineeColumnKey => $nomineeColumn) {
-                $nomineeColumnArray = explode('|', $nomineeColumn);
+                $nomineeColumnArray = explode('|', trim($nomineeColumn));
                 if (count($nomineeColumnArray) <= 1) {
                     continue; //najbrž ni stolpec, ki bi sploh povedal kaj konkretnega
                 }
-                $nominee = $nomineeColumnArray[1];
+                $nominee = str_replace("\"", "", trim($nomineeColumnArray[1]) ) ;
 
                 $indexOfFor = strpos($nominee, " for ");
                 $indexOfIn = strpos($nominee, " in ");
@@ -56,20 +56,30 @@ class Main extends CI_Controller{
                     //glavni film? oz oseba
                     $persons_array = array();
                     $movie = $nominee;
+
+                } elseif ($indexOfIn) {
+                    $persons = trim(substr($nominee, 0, $indexOfIn));
+                    $indexOfFor2 = strpos($persons, " for ");
+                    if ($indexOfFor2) {
+                        $persons = substr($persons, 0, $indexOfFor-1);
+                    }
+
+                    $persons_array = explode(', ', str_replace(' and ', ', ', $persons));
+                    $movie = substr($nominee, $indexOfIn + strlen(" in "));
+
+
+
                 } elseif ($indexOfFor) {
                     $persons = trim(substr($nominee, 0, $indexOfFor));
                     $persons_array = explode(', ', str_replace(' and ', ', ', $persons));
                     $movie = substr($nominee, $indexOfFor + strlen(" for "));
 
-                    $indexOfIn = strpos($movie, " in "); //narejeno pri pesmih in podobno, da se loči film
-                    if ($indexOfIn) {
-                        $movie = substr($movie, $indexOfIn + strlen(" in "));
+                    $indexOfIn2 = strpos($movie, " in "); //narejeno pri pesmih in podobno, da se loči film
+                    if ($indexOfIn2) {
+                        $movie = substr($movie, $indexOfIn2 + strlen(" in "));
                     }
 
-                } elseif ($indexOfIn) {
-                    $persons = trim(substr($nominee, 0, $indexOfIn));
-                    $persons_array = explode(', ', str_replace(' and ', ', ', $persons));
-                    $movie = substr($nominee, $indexOfIn + strlen(" in "));
+
                 } else {
                     $this->var_dump($indexOfIn);
                     $this->var_dump($indexOfFor);
@@ -101,9 +111,9 @@ class Main extends CI_Controller{
 
         }
 
-         $this->var_dump($array);
-//        header('Content-Type: application/json');
-//        echo json_encode($array);
+//         $this->var_dump($array);
+        header('Content-Type: application/json');
+        echo json_encode($array);
     }
 
     private function get_persons_array_from_string($persons) {
