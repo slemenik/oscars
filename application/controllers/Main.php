@@ -5,8 +5,18 @@ class Main extends CI_Controller{
     public function __construct()
     {
         parent::__construct();
+        ini_set('max_execution_time', 0);
 
     }
+
+    /*
+     * - letnik igralca + starost kdaj je dobil nagrado
+- mesec izida
+- bugget filma
+- vse nagrade filma + igralcev (na tem istem filmu?)
+- rating filma
+
+     * */
 
     private function var_dump($data) {
         echo '<pre>';
@@ -96,7 +106,8 @@ class Main extends CI_Controller{
 
                 }
 
-                //todo ostrani (produced by v filmu
+                //ostrani (produced by ...) v imenu filma
+                $movie = explode("(produced by", $movie)[0];
 
                 $type = count($nomineesArray) === 1 || $nomineeColumnKey === 0 ? 'winner' : 'loser';
                 $array[$category][$nomineeColumnKey] = array(
@@ -136,14 +147,18 @@ class Main extends CI_Controller{
 //        echo json_encode($json_object['imdbID']);
 //    }
 
-    public function get_movie_data($imdb_id = 'tt0499549') {
+
+    public function get_movie_data($imdb_id) {
         ini_set('max_execution_time', 0);
+//        $title = urlencode($title);
         $json = file_get_contents("http://api.myapifilms.com/imdb/idIMDB?" .
             "idIMDB=$imdb_id" .
+//            "title=$title" .
+//            "&year=$year" .
             "&token=0f8e7753-a2d2-44eb-988b-afac4b7b0203" .
             "&format=json" .
-            "&awards=1");
-            //.            "&actorActress=0&actorTrivia=0&similarMovies=0&goofs=0&keyword=0&quotes=0&fullSize=0&companyCredits=0&filmingLocations=0
+            "&awards=0");//todo spremeni da dobiš awardse
+
 
         $json_object = json_decode($json, true);
         echo json_encode($json_object);
@@ -159,8 +174,5 @@ class Main extends CI_Controller{
 
         $this->load->view('footer_view');
     }
-
-
-
 
 }
