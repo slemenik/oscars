@@ -121,6 +121,34 @@ class Main extends CI_Controller{
 
     }
 
+    public function test($title, $year) {
+        $imdb_id = $this->get_imdb_id($title, $year);
+        $this->get_movie_data($imdb_id);
+    }
+
+//    public function get_imdb_id($title, $year) {
+//
+//        $json = file_get_contents("http://www.omdbapi.com/?" .
+//            "&apikey=e0ce7de6" .
+//            "&t=$title" .
+//            "&y=$year");
+//        $json_object = json_decode($json, true);
+//        echo json_encode($json_object['imdbID']);
+//    }
+
+    public function get_movie_data($imdb_id = 'tt0499549') {
+        ini_set('max_execution_time', 0);
+        $json = file_get_contents("http://api.myapifilms.com/imdb/idIMDB?" .
+            "idIMDB=$imdb_id" .
+            "&token=0f8e7753-a2d2-44eb-988b-afac4b7b0203" .
+            "&format=json" .
+            "&awards=1");
+            //.            "&actorActress=0&actorTrivia=0&similarMovies=0&goofs=0&keyword=0&quotes=0&fullSize=0&companyCredits=0&filmingLocations=0
+
+        $json_object = json_decode($json, true);
+        echo json_encode($json_object);
+    }
+
     public function index(){
 //        header('Content-Type: text/plain');//temp
         $data['title_variable'] = "Main";

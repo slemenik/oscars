@@ -16,8 +16,6 @@ function start () {
 
 }
 
-
-
 function get(year){
     if (year <= 2018) {
         $.get(
@@ -47,4 +45,54 @@ function get(year){
         console.log("end");
         console.log(categories);
     }
+}
+
+function get_movie() {
+    var title = "Avatar";
+    var year = 2009;
+    $.get(
+        "http://www.omdbapi.com/",
+        {
+        t : title,
+        y : year,
+        apikey : 'e0ce7de6'
+        // output : 'JSON'
+        },
+        function(data) {
+
+            var imdbID = data.imdbID;
+            console.log(imdbID);
+            get_movie_data(imdbID);
+        }
+    );
+}
+
+// function get_movie_data2(imdbID) {
+//     $.get(
+//         "http://api.myapifilms.com/imdb/idIMDB",
+//         {
+//             idIMDB : imdbID,
+//             token : '0f8e7753-a2d2-44eb-988b-afac4b7b0203',
+//             awards : 1,
+//             format : 'json'
+//         },
+//         function(data) {
+//             console.log(data);
+//         }
+//     );
+// }
+
+function get_movie_data(imdbID) {
+    $.get(
+        "main/get_movie_data/" + imdbID,
+        // {
+        //     idIMDB : imdbID,
+        //     token : '0f8e7753-a2d2-44eb-988b-afac4b7b0203',
+        //     awards : 1,
+        //     format : 'json'
+        // },
+        function(data) {
+            console.log(data);
+        }
+    );
 }
