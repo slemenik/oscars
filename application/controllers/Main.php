@@ -6,7 +6,7 @@ class Main extends CI_Controller{
     {
         parent::__construct();
         ini_set('max_execution_time', 0);
-
+        // print_r(php_ini_loaded_file());
     }
 
     /*
@@ -149,7 +149,7 @@ class Main extends CI_Controller{
 
 
     public function get_movie_data($imdb_id) {
-        ini_set('max_execution_time', 0);
+        ini_set('max_execution_time', 3000);
 //        $title = urlencode($title);
         $json = file_get_contents("http://api.myapifilms.com/imdb/idIMDB?" .
             "idIMDB=$imdb_id" .
@@ -159,9 +159,10 @@ class Main extends CI_Controller{
             "&format=json" .
             "&awards=0");//todo spremeni da dobiš awardse
 
-
-        $json_object = json_decode($json, true);
-        echo json_encode($json_object);
+        header('Content-Type: application/json');
+        echo $json;
+        //$json_object = json_decode($json, true);
+        //echo json_encode($json_object);
     }
 
     public function index(){

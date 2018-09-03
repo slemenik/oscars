@@ -7,6 +7,22 @@ function getBaseUrl() {
 
 // console.log(123);
 
+function testButton() {
+
+
+    $.post(
+        "DBcontroller/create",
+        {
+            t : 1,
+            y : 2,
+            apikey : 'e0ce7de6'
+            // output : 'JSON'
+        },
+        function(data) {
+          console.log(data);
+        }
+    );
+}
 
 var categoriesSet = new Set();
 var moviesHashMap = [];
@@ -18,7 +34,7 @@ function start () {
 }
 
 function get(year){
-    if (year <= 2018) {
+    if (year <= 1935) {//todo temp
         $.get(
             "main/get_nomenees_per_year/" + year,
             // {
@@ -68,35 +84,25 @@ function get_movie(title, year) {
     $.get(
         "http://www.omdbapi.com/",
         {
-        t : encodeURIComponent(title),
+        t : title.replace(new RegExp(' ', 'g'), '+'),
         y : year,
         apikey : 'e0ce7de6'
         // output : 'JSON'
         },
         function(data) {
-            console.log(year + ":"+ title);
-            // var imdbID = data.imdbID;
-            //prvi filmi so bili
-            console.log(data);
-            // get_movie_data(imdbID);
+            //console.log(year + ":"+ title);
+            if (data.Response != "False") {
+                var imdbID = data.imdbID;
+                console.log(data);
+                // get_movie_data(imdbID);
+            } else {
+                console.log("NIMAMO");
+                //todo kaj boš z ne dobljenimi filmi?
+            }
+
         }
     );
 }
-
-// function get_movie_data2(imdbID) {
-//     $.get(
-//         "http://api.myapifilms.com/imdb/idIMDB",
-//         {
-//             idIMDB : imdbID,
-//             token : '0f8e7753-a2d2-44eb-988b-afac4b7b0203',
-//             awards : 1,
-//             format : 'json'
-//         },
-//         function(data) {
-//             console.log(data);
-//         }
-//     );
-// }
 
 function get_movie_data(imdbID) {
     $.get(
@@ -108,23 +114,8 @@ function get_movie_data(imdbID) {
         //     format : 'json'
         // },
         function(data) {
-            console.log(data);
+            var movieData = data.data.movies[0];
+            console.log(movieData);
         }
     );
 }
-// function get_movie_data(title, year) {
-//     $.get(
-//         "main/get_movie_data/" + title + "/" + year,
-//         // {
-//         //     idIMDB : imdbID,
-//         //     token : '0f8e7753-a2d2-44eb-988b-afac4b7b0203',
-//         //     awards : 1,
-//         //     format : 'json'
-//         // },
-//         function(data) {
-//             console.log((year) + ":"+ title);
-//             console.log(data);
-//         }
-//     );
-// get_movie_data
-// }
