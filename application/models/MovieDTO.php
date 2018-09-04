@@ -21,6 +21,15 @@ class MovieDTO extends CI_Model
         return $this->db->insert_id();
     }
 
+    function get_undefined_imdb_ids(){
+
+        $this->db->select('IMDB_ID');
+        $this->db->from('movie');
+        $this->db->where('TITLE IS NULL');
+        return $this->db->get()->result_array();
+
+    }
+
 
 
 

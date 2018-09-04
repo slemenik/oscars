@@ -4,22 +4,48 @@ function getBaseUrl() {
     var baseUrl = getUrl .protocol + "//" + getUrl.host + "/" + getUrl.pathname.split('/')[1];
     return baseUrl;
 }
+var playValue = false;
 
-// console.log(123);
+function play() {
+    playValue = true;
+}
 
 function testButton() {
+    console.log("test button click")
+    get_undefined_ids();
+}
 
+function stop() {
+    playValue = false;
+}
+
+
+
+
+
+
+function insertMovieID(id) {
 
     $.post(
         "DBcontroller/create",
         {
-            t : 1,
-            y : 2,
-            apikey : 'e0ce7de6'
-            // output : 'JSON'
+            IMDB_ID : id,
         },
         function(data) {
           console.log(data);
+        }
+    );
+}
+
+function insertMovieTitleYear(title, year) {
+    $.post(
+        "DBcontroller/create",
+        {
+            TITLE : title,
+            RELEASE_DATE: year + "-01-01"
+        },
+        function(data) {
+            console.log(data);
         }
     );
 }
@@ -29,12 +55,12 @@ var moviesHashMap = [];
 
 function start () {
     console.log("start");
-    get(1935); // leta pred tem so bili oskarji od avgusta do julija neslednje leto
+    get(1935); // leta pred 1935 tem so bili oskarji od avgusta do julija neslednje leto
 
 }
 
 function get(year){
-    if (year <= 1935) {//todo temp
+    if (year <= 2018 && playValue) {//todo temp
         $.get(
             "main/get_nomenees_per_year/" + year,
             // {
@@ -69,8 +95,6 @@ function get(year){
                 year++;
                 get(year);
 
-
-
             }
         );
     } else {
@@ -94,28 +118,16 @@ function get_movie(title, year) {
             if (data.Response != "False") {
                 var imdbID = data.imdbID;
                 console.log(data);
+                insertMovieID(imdbID);
                 // get_movie_data(imdbID);
             } else {
-                console.log("NIMAMO");
+                console.log("NIMAMO" + title + "--"+year);
+
+                //vseeno vstavimo brez idja
+                insertMovieTitleYear(title, year);
                 //todo kaj boš z ne dobljenimi filmi?
             }
 
-        }
-    );
-}
-
-function get_movie_data(imdbID) {
-    $.get(
-        "main/get_movie_data/" + imdbID,
-        // {
-        //     idIMDB : imdbID,
-        //     token : '0f8e7753-a2d2-44eb-988b-afac4b7b0203',
-        //     awards : 1,
-        //     format : 'json'
-        // },
-        function(data) {
-            var movieData = data.data.movies[0];
-            console.log(movieData);
         }
     );
 }
