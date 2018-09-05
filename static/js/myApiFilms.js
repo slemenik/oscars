@@ -13,11 +13,12 @@ function get_movie_data(imdbID, counter) {
             var movieData = data.data.movies[0];
             console.log(movieData);
             counter++;
-            if (counter<imdbIDs.length) {
-                get_movie_data(imdbIDs[counter]['IMDB_ID'], counter)
-            } else {
-                console.log("end get_movie_data()")
-            }
+            updateMovie(movieData);
+            // if (counter<imdbIDs.length) {
+            //     get_movie_data(imdbIDs[counter]['IMDB_ID'], counter)
+            // } else {
+            //     console.log("end get_movie_data()")
+            // }
 
         }
     );
@@ -38,6 +39,37 @@ function get_undefined_ids() {
             console.log("dobil id-je")
             imdbIDs = data;
             get_movie_data(imdbIDs[0]['IMDB_ID'], 0);
+        }
+    );
+}
+
+function updateMovie(movieData) {
+    // var releaseDate = movieData.releaseDate.substr(0,4)
+    //     + "-" + movieData.releaseDate.substr(4,2)
+    //     + "-" + movieData.releaseDate.substr(6,2);
+    //
+    // var lengthMin = movieData.runtime.split(" ")[0];
+    // var hours = Math.floor( lengthMin / 60);
+    // var minutes = lengthMin % 60;
+    // var length = "0" + hours + ":" + minutes + ":00";
+    //
+    // var budget = business.budget.substr(1).replace(",","");
+    // var box_office = business.worldwide.substr(1).replace(",","");
+    $.post(
+        "DBcontroller/update_movie",
+        {
+            // TITLE: movieData.title,
+            // PART: null,
+            // BOX_OFFICE: box_office,
+            // BUDGET: budget,
+            // RELEASE_DATE: releaseDate,
+            // LENGTH: length,
+            // IMDB_ID : movieData.idIMDB
+            movieData: movieData
+
+        },
+        function(data) {
+            console.log(data);
         }
     );
 }

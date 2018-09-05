@@ -12,7 +12,7 @@ function play() {
 
 function testButton() {
     console.log("test button click")
-    get_undefined_ids();
+    get_movie_data("tt0499549")
 }
 
 function stop() {
@@ -55,8 +55,8 @@ var moviesHashMap = [];
 
 function start () {
     console.log("start");
-    get(1935); // leta pred 1935 tem so bili oskarji od avgusta do julija neslednje leto
-
+    get(1947); // leta pred 1935 tem so bili oskarji od avgusta do julija neslednje leto
+    // 1946 dodaj še noter, pred tem zbriši vse filme s tega leta, ker se je tm zataknu request
 }
 
 function get(year){

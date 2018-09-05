@@ -174,7 +174,7 @@ class Main extends CI_Controller{
             "&business=1" .
             "&seasons=0" .
             "&seasonYear=0" .
-            "&technical=1" .
+            "&technical=0" .
             "&trailers=0" .
             "&movieTrivia=0" .
             "&awards=1" .
@@ -184,9 +184,9 @@ class Main extends CI_Controller{
             "&biography=1" .
             "&uniqueName=1" .
             "&filmography=0" .
-            "&bornAndDead=0" .
+            "&bornAndDead=1" .
             "&starSign=0" .
-            "&actorActress=0" .
+            "&actorActress=1" .
             "&actorTrivia=0" .
             "&similarMovies=0" .
             "&goofs=0" .

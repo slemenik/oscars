@@ -30,6 +30,26 @@ class MovieDTO extends CI_Model
 
     }
 
+    function update($dto) {
+        $this->db->where('IMDB_ID', $dto['IMDB_ID']);
+        $this->db->update('movie', $dto);
+        return $this->db->affected_rows() == 1 ? true : false;
+    }
+
+    public function update_group($group_id, $project_id)
+    {
+        $this->db   ->set('Id_skupina', $group_id)
+            ->where('Id_projekta',$project_id)
+            ->update('projekt');
+    }
+
+    public function update_project($project_data)
+    {
+        $this->db->where('Id_projekta', $project_data['Id_projekta']);
+        $this->db->update('projekt', $project_data);
+        return $this->db->affected_rows() == 1 ? true : false;
+    }
+
 
 
 
