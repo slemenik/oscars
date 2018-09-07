@@ -11,7 +11,7 @@ function get_movie_data(imdbID, counter) {
         // },
         function(data) {
             var movieData = data.data.movies[0];
-            console.log(movieData);
+            //console.log(movieData);
             counter++;
             updateMovie(movieData);
             // if (counter<imdbIDs.length) {
@@ -55,21 +55,36 @@ function updateMovie(movieData) {
     //
     // var budget = business.budget.substr(1).replace(",","");
     // var box_office = business.worldwide.substr(1).replace(",","");
-    $.post(
-        "DBcontroller/update_movie",
-        {
-            // TITLE: movieData.title,
-            // PART: null,
-            // BOX_OFFICE: box_office,
-            // BUDGET: budget,
-            // RELEASE_DATE: releaseDate,
-            // LENGTH: length,
-            // IMDB_ID : movieData.idIMDB
-            movieData: movieData
 
-        },
-        function(data) {
+
+    console.log(movieData);
+    $.ajax({
+        url:"DBcontroller/update_movie",
+        type:"POST",
+        data: JSON.stringify(movieData),
+        contentType:"application/json; charset=utf-8",
+        // dataType:"json",
+        success: function(data){
             console.log(data);
         }
-    );
+    })
+
+    // $.post(
+    //     "DBcontroller/update_movie",
+    //     {
+    //         // TITLE: movieData.title,
+    //         // PART: null,
+    //         // BOX_OFFICE: box_office,
+    //         // BUDGET: budget,
+    //         // RELEASE_DATE: releaseDate,
+    //         // LENGTH: length,
+    //         // IMDB_ID : movieData.idIMDB
+    //         movieData: movieData
+    //
+    //     },
+    //     function(data) {
+    //         console.log(data);
+    //     },
+    //     'json'
+    // );
 }

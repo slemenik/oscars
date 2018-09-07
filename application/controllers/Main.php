@@ -2,6 +2,8 @@
 
 class Main extends CI_Controller{
 
+    const TOKEN = '0f8e7753-a2d2-44eb-988b-afac4b7b0203';
+
     public function __construct()
     {
         parent::__construct();
@@ -167,7 +169,7 @@ class Main extends CI_Controller{
 
         $url2 = "http://www.myapifilms.com/imdb/idIMDB?" .
             "idIMDB=$imdb_id" .
-            "&token=0f8e7753-a2d2-44eb-988b-afac4b7b0203" .
+            "&token=".$this::TOKEN .
             "&format=json" .
             "&language=en-us" .
             "&aka=0" .

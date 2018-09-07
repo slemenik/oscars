@@ -55,8 +55,10 @@ var moviesHashMap = [];
 
 function start () {
     console.log("start");
-    get(1947); // leta pred 1935 tem so bili oskarji od avgusta do julija neslednje leto
+    get(2004); // leta pred 1935 tem so bili oskarji od avgusta do julija neslednje leto
     // 1946 dodaj še noter, pred tem zbriši vse filme s tega leta, ker se je tm zataknu request
+    // 1986 dodaj še noter, pred tem zbriši vse filme s tega leta, ker se je tm zataknu request
+    // 2001 dodaj še noter, pred tem zbriši vse filme s tega leta, ker se je tm zataknu request
 }
 
 function get(year){

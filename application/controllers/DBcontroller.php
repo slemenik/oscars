@@ -6,8 +6,13 @@ class DBcontroller extends CI_Controller{
     {
         parent::__construct();
         ini_set('max_execution_time', 0);
+        $this->db->db_debug = FALSE;
         $this->load->model('MovieDTO');
-        // header('Content-Type: application/json');
+        $this->load->model('Person_model');
+        $this->load->model('Genre_model');
+        $this->load->model('Rating_model');
+        $this->load->model('Company_model');
+//        header('Content-Type: application/json');
         // print_r(php_ini_loaded_file());
     }
 
@@ -35,9 +40,14 @@ class DBcontroller extends CI_Controller{
     }
 
     public function update_movie() {
-        $data = $this->input->post()['movieData'];
+//        $data = $this->input->post();//['movieData'];
+        $data = get_request();
 
-        var_dump($data);
+        $this->db->trans_begin();
+
+        $movie_imdb_id = $data['idIMDB'];
+        $movie_id = $this->MovieDTO->get_movie_id($movie_imdb_id);
+
         if (isset($data['releaseDate'])) {
             $releaseDate = substr($data['releaseDate'], 0,4).
                 "-".substr($data['releaseDate'],4,2)
@@ -67,31 +77,6 @@ class DBcontroller extends CI_Controller{
             $box_office = null;
         }
 
-        if (isset($directors)) {
-
-            foreach ($directors as $director) {
-                //poglej če obstaja
-                $db_id = $this->Person_model->get_person_by_imdb_id($director['id']);
-                if ($db_id == null) {
-                    var_dump(123);
-                } elseif (is_array($db_id) && empty($db_id)) {
-                    var_dump(456);
-                } elseif (is_array($db_id)) {
-                    var_dump(789);
-                } else {
-                    var_dump(000);
-                }
-
-
-                // če ne obstaja ga vstavi
-
-                //dodaj k filmu
-            }
-
-        }
-
-
-
         $dto = [
             'TITLE' => $data['title'],
             'PART' => null,
@@ -99,8 +84,139 @@ class DBcontroller extends CI_Controller{
             'BUDGET' => $budget,
             'RELEASE_DATE' => $releaseDate,
             'LENGTH' => $length,
-            'IMDB_ID'  => $data['idIMDB']
+            //'IMDB_ID'  => $data['idIMDB'] // ne spreminjamo id-ja
         ];
+
+        $this->MovieDTO->update($dto, $movie_id);
+
+
+        if (isset($data['directors'])) {
+
+            foreach ($data['directors'] as $director) {
+                $person_id = $this->Person_model->get_person_by_imdb_id($director['id']);
+                $this->Person_model->create_director($movie_id, $person_id);
+            }
+
+        }
+
+        if (isset($data['writers'])) {
+            foreach ($data['writers'] as $writer) {
+                $person_id = $this->Person_model->get_person_by_imdb_id($writer['id']);
+                $this->Person_model->create_writer($movie_id, $person_id);
+            }
+        }
+
+        if (isset($data['genres'])) {
+            $this->Genre_model->set_genre_list($movie_id, $data['genres']);
+        }
+
+        if (isset($data['rating'])) {
+            $this->Rating_model->add_rating([
+                'MOVIE_ID' => $movie_id,
+                'SOURCE' => 'imdb',
+                'SCORE' => $data['rating']
+            ]);
+        }
+
+        if (isset($data['metascore'])) {
+            $this->Rating_model->add_rating([
+                'MOVIE_ID' => $movie_id,
+                'SOURCE' => 'metascore',
+                'SCORE' => $data['metascore']
+            ]);
+        }
+
+        if (isset($data['companyCreditsFull'])) {
+            foreach ($data['companyCreditsFull'] as $company_types) {
+                $type = $company_types['type'];
+                $actual_companies = $company_types['company'];
+                foreach ($actual_companies as $company) {
+                    $company_name = $company['name'];
+                    $company_id = $this->Company_model->get_id($company_name, $type);
+                    $this->Company_model->set_company($movie_id, $company_id);
+                }
+            }
+        }
+
+        if (isset($data['actors'])) {
+            foreach ($data['actors'] as $actor) {
+                $name = $actor['actorName'];
+                $actor_imdb_id = $actor['actorId'];
+                if (isset($actor['biography'])) {
+                    $biography_data = $actor['biography'];
+
+                    //spol
+                    if (isset($biography_data['actorActress'])) {
+                        $sex = $biography_data['actorActress'];
+                        $gender = ($sex == "Actor") ? "M" : "F";
+                    }
+                    else {
+                        $gender = null;
+                    }
+
+                    //datum rojstva
+                    if (isset($biography_data['born'])) {
+                        $date_string = $biography_data['born'];
+                        $month = date_parse(explode(' ', $date_string)[0])['month'];
+                        $day = str_replace(",", "", explode(' ', $date_string)[1]);
+                        $year = explode(' ', $date_string)[2];
+                        $birthday = "$year-$month-$day";
+                    }
+                    else {
+                        $birthday = null;
+                    }
+
+                } else {
+                    $gender = null;
+                    $birthday = null;
+                }
+
+                $actor_data = [
+                    'FULL_NAME' => $name,
+                    'BIRTHDAY' => $birthday,
+                    'GENDER' => $gender
+                ];
+                $actor_db_id = $this->Person_model->get_person_by_imdb_id($actor_imdb_id);
+                $this->Person_model->update_person($actor_data, $actor_db_id);
+                $this->Person_model->create_actor($movie_id, $actor_db_id);
+            }
+        }
+
+        if (isset($data['awards'])) {
+            foreach ($data['awards'] as $award) {
+                $award_name_string = $award['award'];
+                $explode = explode(' ', $award_name_string);
+                $last_element = $explode[count($explode)-1];
+                if (is_numeric($last_element)) {
+                    $year = intval($last_element);
+                    unset($explode[count($explode)-1]);
+                    $award_name = implode($explode);
+                } else {
+                    $year = null;
+                    $award_name = $award_name_string;
+                }
+
+                foreach ($award['titlesAwards'] as $titlesAward) {
+                    $titlesAwardOutcome = $titlesAward['titleAwardOutcome']; // Winner Oscar
+                    $outcome = explode(' ', $titlesAward)[0];
+                    $outcome = $outcome == 'Winner' ? 1 : 0;
+                    foreach ($titlesAward['categories'] as $category) {
+                        $category_name = $category['category'];
+                        foreach ($category['names'] as $name) {
+                            $person_name = $name['name'];
+                            $person_imdb_id = $name['id'];
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+
+        $this->db->trans_rollback();
+
+        echo json_encode($dto);
 
         // var_dump($dto);
 
