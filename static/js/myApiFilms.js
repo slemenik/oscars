@@ -1,6 +1,9 @@
 
 function get_movie_data(imdbID, counter) {
-    console.log("get_movie_data() začetek, imdbID " + imdbID + ", counter: " + counter);
+    console.log("js funkcija get_movie_data(), imdbID " + imdbID + ", counter: " + counter);
+    if (playValue == false) {
+        return;
+    }
     $.get(
         "main/get_movie_data/" + imdbID,
         // {
@@ -14,11 +17,11 @@ function get_movie_data(imdbID, counter) {
             //console.log(movieData);
             counter++;
             updateMovie(movieData);
-            // if (counter<imdbIDs.length) {
-            //     get_movie_data(imdbIDs[counter]['IMDB_ID'], counter)
-            // } else {
-            //     console.log("end get_movie_data()")
-            // }
+            if (counter<imdbIDs.length) {
+                get_movie_data(imdbIDs[counter].IMDB_ID, counter)
+            } else {
+                console.log("end get_movie_data()")
+            }
 
         }
     );
@@ -36,14 +39,21 @@ function get_undefined_ids() {
         //     format : 'json'
         // },
         function(data) {
-            console.log("dobil id-je")
-            imdbIDs = data;
-            get_movie_data(imdbIDs[0]['IMDB_ID'], 0);
+
+            imdbIDs = jQuery.parseJSON(data);
+            console.log("dobil id-je, velikost: " + imdbIDs.length);
+            // console.log(imdbIDs);
+            get_movie_data(imdbIDs[0].IMDB_ID, 0); //poglej prvi vnos
         }
     );
 }
 
 function updateMovie(movieData) {
+
+    if (playValue == false) {
+        return;
+    }
+    console.log("js funkcija updateMovie()");
     // var releaseDate = movieData.releaseDate.substr(0,4)
     //     + "-" + movieData.releaseDate.substr(4,2)
     //     + "-" + movieData.releaseDate.substr(6,2);
@@ -57,7 +67,7 @@ function updateMovie(movieData) {
     // var box_office = business.worldwide.substr(1).replace(",","");
 
 
-    console.log(movieData);
+    // console.log(movieData);
     $.ajax({
         url:"DBcontroller/update_movie",
         type:"POST",
@@ -65,6 +75,11 @@ function updateMovie(movieData) {
         contentType:"application/json; charset=utf-8",
         // dataType:"json",
         success: function(data){
+            console.log("success js funkcije updateMovie()");
+            console.log(data);
+        },
+        error: function (data) {
+            console.log("error js funkcije updateMovie()");
             console.log(data);
         }
     })

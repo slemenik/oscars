@@ -12,6 +12,8 @@ class DBcontroller extends CI_Controller{
         $this->load->model('Genre_model');
         $this->load->model('Rating_model');
         $this->load->model('Company_model');
+        $this->load->model('Award_model');
+        $this->load->model('Category_model');
 //        header('Content-Type: application/json');
         // print_r(php_ini_loaded_file());
     }
@@ -94,6 +96,7 @@ class DBcontroller extends CI_Controller{
 
             foreach ($data['directors'] as $director) {
                 $person_id = $this->Person_model->get_person_by_imdb_id($director['id']);
+                $this->Person_model->update_person(['FULL_NAME' => $director['name']], $person_id);
                 $this->Person_model->create_director($movie_id, $person_id);
             }
 
@@ -102,6 +105,7 @@ class DBcontroller extends CI_Controller{
         if (isset($data['writers'])) {
             foreach ($data['writers'] as $writer) {
                 $person_id = $this->Person_model->get_person_by_imdb_id($writer['id']);
+                $this->Person_model->update_person(['FULL_NAME' => $writer['name']], $person_id);
                 $this->Person_model->create_writer($movie_id, $person_id);
             }
         }
@@ -196,27 +200,102 @@ class DBcontroller extends CI_Controller{
                     $award_name = $award_name_string;
                 }
 
+                $award_id = $this->Award_model->get_award_id($award_name);
+
                 foreach ($award['titlesAwards'] as $titlesAward) {
                     $titlesAwardOutcome = $titlesAward['titleAwardOutcome']; // Winner Oscar
-                    $outcome = explode(' ', $titlesAward)[0];
+                    $outcome = explode(' ', $titlesAwardOutcome)[0];
                     $outcome = $outcome == 'Winner' ? 1 : 0;
                     foreach ($titlesAward['categories'] as $category) {
                         $category_name = $category['category'];
+                        if ($category_name == "") {
+                            $category_name = substr(strstr($category_name," "), 1); //odstranimo prvo besedo (Winner ali Nomenee)
+                        }
+                        $category_id = $this->Category_model->get_category_id($category_name);
                         foreach ($category['names'] as $name) {
                             $person_name = $name['name'];
                             $person_imdb_id = $name['id'];
+
+                            $person_db_id = $this->Person_model->get_person_by_imdb_id($person_imdb_id);
+                            $this->Person_model->update_person(['FULL_NAME' => $person_name], $person_db_id);
+
+                            $this->Award_model->set_received_award([
+                                'CATEGORY_ID' => $category_id,
+                                'AWARD_TYPE_ID' => $award_id,
+                                'YEAR' => $year
+                            ]);
+
+                            if (strpos($category_name, "actor") !== false ||
+                                strpos($category_name, "actress") !== false ||
+                                strpos($category_name, "Actor") !== false ||
+                                strpos($category_name, "Actress") !== false ||
+                                strpos($category_name, " acti") !== false ||
+                                strpos($category_name, " Acti") !== false
+                            ) { //igralska vloga
+
+                                $this->Award_model->set_actor_award([
+                                    'MOVIE_ID' => $movie_id,
+                                    'PERSON_ID' => $person_db_id,
+                                    'CATEGORY_ID' => $category_id,
+                                    'AWARD_TYPE_ID' => $award_id,
+                                    'YEAR' => $year,
+                                    'WINNER' => $outcome
+                                ]);
+
+                            } elseif (strpos($category_name, "direct") !== false ||
+                                strpos($category_name, "Direct") !== false
+                            ) { //režiser
+                                $this->Award_model->set_director_award([
+                                    'MOVIE_ID' => $movie_id,
+                                    'PERSON_ID' => $person_db_id,
+                                    'CATEGORY_ID' => $category_id,
+                                    'AWARD_TYPE_ID' => $award_id,
+                                    'YEAR' => $year,
+                                    'WINNER' => $outcome
+                                ]);
+
+                            } elseif (strpos($category_name, "writ") !== false ||
+                                strpos($category_name, "Writ") !== false
+                            ) { //scenarij
+                                $this->Award_model->set_writer_award([
+                                    'MOVIE_ID' => $movie_id,
+                                    'PERSON_ID' => $person_db_id,
+                                    'CATEGORY_ID' => $category_id,
+                                    'AWARD_TYPE_ID' => $award_id,
+                                    'YEAR' => $year,
+                                    'WINNER' => $outcome
+                                ]);
+
+                            } else { //ostalo
+                                $this->Award_model->set_movie_award([
+                                    'MOVIE_ID' => $movie_id,
+                                    'CATEGORY_ID' => $category_id,
+                                    'AWARD_TYPE_ID' => $award_id,
+                                    'YEAR' => $year,
+                                    'WINNER' => $outcome
+                                ]);
+                            }
+
+
                         }
                     }
                 }
             }
         }
 
+        if ($this->db->trans_status() === FALSE) {
+            $this->db->trans_rollback();
+            echo json_encode(['SUCESS' => false]);
+        } else {
+            $this->db->trans_commit();
+            echo json_encode(['SUCESS' => true]);
+        }
 
 
 
-        $this->db->trans_rollback();
 
-        echo json_encode($dto);
+
+        // echo json_encode($dto);
 
         // var_dump($dto);
 
