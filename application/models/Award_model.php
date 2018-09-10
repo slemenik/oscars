@@ -30,6 +30,14 @@ class Award_model extends CI_Model
 
     function create_award($award_name) {
         $this->db->insert('award_type', ['AWARD_NAME' => $award_name]);
+        return $this->db->insert_id();
+    }
+
+    function set_received_award($data){
+        $insert_query = $this->db->insert_string('received_award', $data);
+        $insert_query = str_replace('INSERT INTO','INSERT IGNORE INTO',$insert_query);
+        $this->db->query($insert_query);
+
 //        return $this->db->insert_id();
     }
 
@@ -39,6 +47,7 @@ class Award_model extends CI_Model
     }
 
     function set_director_award($data) {
+        // var_dump($data);
         $this->db->insert('director_award', $data);
 //        return $this->db->insert_id();
     }
@@ -49,6 +58,7 @@ class Award_model extends CI_Model
     }
 
     function set_movie_award($data) {
+//        var_dump($data);
         $this->db->insert('movie_award', $data);
     }
 

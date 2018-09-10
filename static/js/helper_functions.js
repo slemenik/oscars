@@ -14,6 +14,7 @@ function testButton() {
     console.log("test button click")
     // get_movie_data("tt0499549")
     get_undefined_ids();
+    // error_handling();
 }
 
 function stop() {

@@ -6,7 +6,7 @@ class DBcontroller extends CI_Controller{
     {
         parent::__construct();
         ini_set('max_execution_time', 0);
-        $this->db->db_debug = FALSE;
+//        $this->db->db_debug = FALSE;
         $this->load->model('MovieDTO');
         $this->load->model('Person_model');
         $this->load->model('Genre_model');
@@ -92,21 +92,25 @@ class DBcontroller extends CI_Controller{
         $this->MovieDTO->update($dto, $movie_id);
 
 
+        $directors_id_array = [];
         if (isset($data['directors'])) {
 
             foreach ($data['directors'] as $director) {
                 $person_id = $this->Person_model->get_person_by_imdb_id($director['id']);
                 $this->Person_model->update_person(['FULL_NAME' => $director['name']], $person_id);
                 $this->Person_model->create_director($movie_id, $person_id);
+                array_push($directors_id_array, $person_id);
             }
 
         }
 
+        $writers_id_array = [];
         if (isset($data['writers'])) {
             foreach ($data['writers'] as $writer) {
                 $person_id = $this->Person_model->get_person_by_imdb_id($writer['id']);
                 $this->Person_model->update_person(['FULL_NAME' => $writer['name']], $person_id);
                 $this->Person_model->create_writer($movie_id, $person_id);
+                array_push($writers_id_array, $person_id);
             }
         }
 
@@ -142,6 +146,7 @@ class DBcontroller extends CI_Controller{
             }
         }
 
+        $actors_id_array = [];
         if (isset($data['actors'])) {
             foreach ($data['actors'] as $actor) {
                 $name = $actor['actorName'];
@@ -183,6 +188,7 @@ class DBcontroller extends CI_Controller{
                 $actor_db_id = $this->Person_model->get_person_by_imdb_id($actor_imdb_id);
                 $this->Person_model->update_person($actor_data, $actor_db_id);
                 $this->Person_model->create_actor($movie_id, $actor_db_id);
+                array_push($actors_id_array, $actor_db_id);
             }
         }
 
@@ -194,10 +200,14 @@ class DBcontroller extends CI_Controller{
                 if (is_numeric($last_element)) {
                     $year = intval($last_element);
                     unset($explode[count($explode)-1]);
-                    $award_name = implode($explode);
+                    $award_name = implode(" ", $explode);
                 } else {
-                    $year = null;
+                    $year = intval(substr($data['releaseDate'], 0,4))+1;
                     $award_name = $award_name_string;
+                }
+
+                if ($year > intval(substr($data['releaseDate'], 0,4))+2) {
+                    continue; //nagrado smo dobili veliko časa po oskarjih, kar je brezveze
                 }
 
                 $award_id = $this->Award_model->get_award_id($award_name);
@@ -208,22 +218,34 @@ class DBcontroller extends CI_Controller{
                     $outcome = $outcome == 'Winner' ? 1 : 0;
                     foreach ($titlesAward['categories'] as $category) {
                         $category_name = $category['category'];
-                        if ($category_name == "") {
+                        if ($category_name == "" || $category_name == null) {
                             $category_name = substr(strstr($category_name," "), 1); //odstranimo prvo besedo (Winner ali Nomenee)
                         }
                         $category_id = $this->Category_model->get_category_id($category_name);
+//                        var_dump("kategorija: ".$category_name);
+//                        var_dump("leto: ".$year);
+//                        var_dump("nagrada: ".$award_name);
+//                        var_dump(" ");
+                        $this->Award_model->set_received_award([
+                            'CATEGORY_ID' => $category_id,
+                            'AWARD_TYPE_ID' => $award_id,
+                            'YEAR' => $year
+                        ]);
+
+                        $is_person_award = true;
                         foreach ($category['names'] as $name) {
                             $person_name = $name['name'];
                             $person_imdb_id = $name['id'];
 
-                            $person_db_id = $this->Person_model->get_person_by_imdb_id($person_imdb_id);
-                            $this->Person_model->update_person(['FULL_NAME' => $person_name], $person_db_id);
+//                            $person_db_id = $this->Person_model->get_person_by_imdb_id($person_imdb_id);
+                            $person_db_id = $this->Person_model->get_actor_by_movie_id($movie_id, $person_imdb_id, $person_name);
 
-                            $this->Award_model->set_received_award([
-                                'CATEGORY_ID' => $category_id,
-                                'AWARD_TYPE_ID' => $award_id,
-                                'YEAR' => $year
-                            ]);
+                            if ($person_db_id == null) {
+                                continue; //sploh ne igra v tem filmi
+                            }
+                            //$this->Person_model->update_person(['FULL_NAME' => $person_name], $person_db_id);
+
+
 
                             if (strpos($category_name, "actor") !== false ||
                                 strpos($category_name, "actress") !== false ||
@@ -232,6 +254,14 @@ class DBcontroller extends CI_Controller{
                                 strpos($category_name, " acti") !== false ||
                                 strpos($category_name, " Acti") !== false
                             ) { //igralska vloga
+//                                var_dump($category_name."--actor award");
+
+//                                var_dump("kategorija: ".$category_name);
+//                                var_dump("leto: ".$year);
+//                                var_dump("nagrada: ".$award_name);
+//
+//                                var_dump("person_id".$person_db_id);
+//                                var_dump(" ");
 
                                 $this->Award_model->set_actor_award([
                                     'MOVIE_ID' => $movie_id,
@@ -242,9 +272,11 @@ class DBcontroller extends CI_Controller{
                                     'WINNER' => $outcome
                                 ]);
 
-                            } elseif (strpos($category_name, "direct") !== false ||
-                                strpos($category_name, "Direct") !== false
+                            } elseif ((strpos($category_name, "direct") !== false ||
+                                strpos($category_name, "Direct") !== false) &&
+                                in_array($person_db_id, $directors_id_array)
                             ) { //režiser
+//                                var_dump($category_name."--director award");
                                 $this->Award_model->set_director_award([
                                     'MOVIE_ID' => $movie_id,
                                     'PERSON_ID' => $person_db_id,
@@ -254,9 +286,11 @@ class DBcontroller extends CI_Controller{
                                     'WINNER' => $outcome
                                 ]);
 
-                            } elseif (strpos($category_name, "writ") !== false ||
-                                strpos($category_name, "Writ") !== false
+                            } elseif ((strpos($category_name, "writ") !== false ||
+                                strpos($category_name, "Writ") !== false) &&
+                                in_array($person_db_id, $writers_id_array)
                             ) { //scenarij
+//                                var_dump($category_name."--writ award");
                                 $this->Award_model->set_writer_award([
                                     'MOVIE_ID' => $movie_id,
                                     'PERSON_ID' => $person_db_id,
@@ -267,28 +301,39 @@ class DBcontroller extends CI_Controller{
                                 ]);
 
                             } else { //ostalo
-                                $this->Award_model->set_movie_award([
-                                    'MOVIE_ID' => $movie_id,
-                                    'CATEGORY_ID' => $category_id,
-                                    'AWARD_TYPE_ID' => $award_id,
-                                    'YEAR' => $year,
-                                    'WINNER' => $outcome
-                                ]);
+                                $is_person_award = false;
+
                             }
 
 
+                        } //end for-each person
+
+                        if ($is_person_award === false) {
+                            $this->Award_model->set_movie_award([
+                                'MOVIE_ID' => $movie_id,
+                                'CATEGORY_ID' => $category_id,
+                                'AWARD_TYPE_ID' => $award_id,
+                                'YEAR' => $year,
+                                'WINNER' => $outcome
+                            ]);
                         }
-                    }
+
+                    } //end for-each categories
                 }
             }
         }
 
         if ($this->db->trans_status() === FALSE) {
+            $err = $this->db->error();
             $this->db->trans_rollback();
-            echo json_encode(['SUCESS' => false]);
+            echo json_encode([
+                'SUCESS' => false,
+                'err' => $err,
+                'last_query'=> $this->db->last_query(),
+                'movie_id' => $movie_id]);
         } else {
-            $this->db->trans_commit();
-            echo json_encode(['SUCESS' => true]);
+             $this->db->trans_commit();
+            echo json_encode(['SUCESS' => true, 'movie_imdb' => $movie_imdb_id]);
         }
 
 

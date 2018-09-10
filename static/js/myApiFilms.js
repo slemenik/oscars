@@ -1,6 +1,6 @@
 
 function get_movie_data(imdbID, counter) {
-    console.log("js funkcija get_movie_data(), imdbID " + imdbID + ", counter: " + counter);
+    console.log("js get_movie_data(), imdbID " + imdbID + ", counter: " + counter);
     if (playValue == false) {
         return;
     }
@@ -13,19 +13,35 @@ function get_movie_data(imdbID, counter) {
         //     format : 'json'
         // },
         function(data) {
+            console.log("success get_movie_data(), imdbID " + imdbID + ", counter: " + counter);
+            if (data.data === 'undefined') {
+
+            }
             var movieData = data.data.movies[0];
             //console.log(movieData);
             counter++;
-            updateMovie(movieData);
-            if (counter<imdbIDs.length) {
-                get_movie_data(imdbIDs[counter].IMDB_ID, counter)
-            } else {
-                console.log("end get_movie_data()")
-            }
+            // updateMovie(movieData);
+            // if (counter<imdbIDs.length) {
+            //     get_movie_data(imdbIDs[counter].IMDB_ID, counter)
+            // } else {
+            //     console.log("end get_movie_data()")
+            // }
 
         }
-    );
+    )  .done(function() {
+        console.log(123);
+    })
+        .fail(function() {
+            console.log(456);
+        });
 }
+
+function error_handling() {
+    imdbIDs = problematicne;
+    get_movie_data(imdbIDs[0].IMDB_ID, 0); //poglej prvi vnos
+}
+
+var problematicne = [{IMDB_ID: 'tt0026752'}, {IMDB_ID: 'tt0026643'}, {IMDB_ID: 'tt0026955'}, {IMDB_ID: 'tt0026143'}];
 
 var imdbIDs= [];
 
@@ -43,7 +59,7 @@ function get_undefined_ids() {
             imdbIDs = jQuery.parseJSON(data);
             console.log("dobil id-je, velikost: " + imdbIDs.length);
             // console.log(imdbIDs);
-            get_movie_data(imdbIDs[0].IMDB_ID, 0); //poglej prvi vnos
+            get_movie_data(imdbIDs[0].IMDB_ID, 0); //poglej prvi vnos, 142. vnos, prejšnje si že
         }
     );
 }
@@ -53,7 +69,7 @@ function updateMovie(movieData) {
     if (playValue == false) {
         return;
     }
-    console.log("js funkcija updateMovie()");
+    console.log("js updateMovie()");
     // var releaseDate = movieData.releaseDate.substr(0,4)
     //     + "-" + movieData.releaseDate.substr(4,2)
     //     + "-" + movieData.releaseDate.substr(6,2);
@@ -75,12 +91,12 @@ function updateMovie(movieData) {
         contentType:"application/json; charset=utf-8",
         // dataType:"json",
         success: function(data){
-            console.log("success js funkcije updateMovie()");
+            console.log("success js updateMovie()");
             console.log(data);
         },
         error: function (data) {
             console.log("error js funkcije updateMovie()");
-            console.log(data);
+            console.log(data.responseText);
         }
     })
 

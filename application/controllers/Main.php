@@ -159,15 +159,15 @@ class Main extends CI_Controller{
     public function get_movie_data($imdb_id) {
         ini_set('max_execution_time', 3000);
 //        $title = urlencode($title);
-        $url = "http://api.myapifilms.com/imdb/idIMDB?" .
-            "idIMDB=$imdb_id" .
-//            "title=$title" .
-//            "&year=$year" .
-            "&token=0f8e7753-a2d2-44eb-988b-afac4b7b0203" .
-            "&format=json" .
-            "&awards=0";//todo spremeni da dobiš awardse
+//        $url = "http://api.myapifilms.com/imdb/idIMDB?" .
+//            "idIMDB=$imdb_id" .
+////            "title=$title" .
+////            "&year=$year" .
+//            "&token=0f8e7753-a2d2-44eb-988b-afac4b7b0203" .
+//            "&format=json" .
+//            "&awards=0";//todo spremeni da dobiš awardse
 
-        $url2 = "http://www.myapifilms.com/imdb/idIMDB?" .
+        $url2 = "http://www.myapifilms.com/imd1b/idIMDB?" .
             "idIMDB=$imdb_id" .
             "&token=".$this::TOKEN .
             "&format=json" .
@@ -182,9 +182,9 @@ class Main extends CI_Controller{
             "&awards=1" .
             "&moviePhotos=0" .
             "&movieVideos=0" .
-            "&actors=2" .
+            "&actors=1" .
             "&biography=1" .
-            "&uniqueName=1" .
+            "&uniqueName=0" .
             "&filmography=0" .
             "&bornAndDead=1" .
             "&starSign=0" .

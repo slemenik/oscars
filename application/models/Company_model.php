@@ -39,8 +39,11 @@ class Company_model extends CI_Model
 //
 //
     function set_company($movie_id, $company_id) {
-        $this->db->insert('company', ['MOVIE_ID' => $movie_id, 'COMPANY_ID' => $company_id]);
-        return $this->db->insert_id();
+        $insert_query = $this->db->insert_string('movie_company', ['MOVIE_ID' => $movie_id, 'COMPANY_ID' => $company_id]);
+        $insert_query = str_replace('INSERT INTO','INSERT IGNORE INTO',$insert_query);
+        $this->db->query($insert_query);
+
+//        return $this->db->insert_id();
     }
 //
 //

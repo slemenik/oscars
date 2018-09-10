@@ -26,6 +26,8 @@ class MovieDTO extends CI_Model
         $this->db->select('IMDB_ID');
         $this->db->from('movie');
         $this->db->where('TITLE IS NULL');
+        $this->db->where('IMDB_ID IS NOT NULL');
+        $this->db->order_by('MOVIE_ID', 'ASC');
         return $this->db->get()->result_array();
 
     }
