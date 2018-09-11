@@ -21,7 +21,9 @@ function stop() {
     playValue = false;
 }
 
-
+window.onbeforeunload = function() {
+    return ''; //preprečimo da gremo stran s strani
+};
 
 
 

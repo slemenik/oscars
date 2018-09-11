@@ -54,6 +54,8 @@ class DBcontroller extends CI_Controller{
             $releaseDate = substr($data['releaseDate'], 0,4).
                 "-".substr($data['releaseDate'],4,2)
                 ."-".substr($data['releaseDate'],6,2);
+        } elseif (isset($data['year'])) {
+            $releaseDate = $data['year']."-01-01";
         } else {
             $releaseDate = null;
         }
@@ -206,7 +208,17 @@ class DBcontroller extends CI_Controller{
                     $award_name = $award_name_string;
                 }
 
-                if ($year > intval(substr($data['releaseDate'], 0,4))+2) {
+                //$year je leto nagrade
+
+                if (isset($data['releaseDate'])) {
+                    $release_year = intval(substr($data['releaseDate'], 0,4));
+                } elseif (isset($data['year'])) {
+                    $release_year = intval($data['year']);
+                } else {
+                    $release_year = 999999; //neka absurdno visoka cifra
+                }
+
+                if ($year > $release_year + 2) {
                     continue; //nagrado smo dobili veliko časa po oskarjih, kar je brezveze
                 }
 

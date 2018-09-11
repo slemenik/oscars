@@ -167,7 +167,7 @@ class Main extends CI_Controller{
 //            "&format=json" .
 //            "&awards=0";//todo spremeni da dobiš awardse
 
-        $url2 = "http://www.myapifilms.com/imd1b/idIMDB?" .
+        $url2 = "http://www.myapifilms.com/imdb/idIMDB?" .
             "idIMDB=$imdb_id" .
             "&token=".$this::TOKEN .
             "&format=json" .
