@@ -7,6 +7,7 @@
     <br>
     <button onclick="play()">play</button>
     <button onclick="stop()">stop</button>
+    <button onclick="olap()">olap</button>
 
     <br>
     <a href="main/get_nomenees_per_year/1929">get_nomenees_per_year/1929</a>
