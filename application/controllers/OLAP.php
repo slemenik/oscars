@@ -38,7 +38,7 @@ class OLAP extends CI_Controller
     ";
 
     private $initalLoadWriterSql = "
-        INSERT INTO ipi_olap.dim_screenwriter(SCREENWRITER_ID, SCREENWRITER_ID_FULL_NAME, SCREENWRITER_ID_BIRTHDAY, SCREENWRITER_ID_GENDER, SCREENWRITER_ID_IMDB_ID )
+        INSERT INTO ipi_olap.dim_screenwriter(SCREENWRITER_ID, SCREENWRITER_FULL_NAME, SCREENWRITER___BIRTHDAY, SCREENWRITER_GENDER, SCREENWRITER_IMDB_ID )
         SELECT NULL, P.FULL_NAME, P.BIRTHDAY, P.GENDER, P.IMDB_ID
         FROM ipi.person P, ipi.screenwriter S
         WHERE P.PERSON_ID = S.PERSON_ID;
@@ -106,15 +106,15 @@ class OLAP extends CI_Controller
         INSERT INTO ipi_olap.dim_movie(MOVIE_ID, TITLE, BOX_OFFICE, BUDGET, RELEASE_DATE, LENGTH)
         SELECT NULL, TITLE, BOX_OFFICE, BUDGET, RELEASE_DATE, LENGTH
         FROM ipi.movie M
-        WHERE `exists`(SELECT 1 FROM movie_award MA WHERE MA.MOVIE_ID = M.MOVIE_ID)
-        OR `EXISTS`(SELECT 1 FROM actor_reward AR WHERE AR.MOVIE_ID = M.MOVIE_ID)
-        OR `EXISTS`(SELECT 1 FROM screenwriter_award SA WHERE SA.MOVIE_ID = M.MOVIE_ID)
-        OR `EXISTS`(SELECT 1 FROM director_award DA WHERE DA.MOVIE_ID = M.MOVIE_ID);
+        WHERE exists(SELECT 1 FROM ipi.movie_award MA WHERE MA.MOVIE_ID = M.MOVIE_ID)
+        OR EXISTS(SELECT 1 FROM ipi.actor_reward AR WHERE AR.MOVIE_ID = M.MOVIE_ID)
+        OR EXISTS(SELECT 1 FROM ipi.screenwriter_award SA WHERE SA.MOVIE_ID = M.MOVIE_ID)
+        OR EXISTS(SELECT 1 FROM ipi.director_award DA WHERE DA.MOVIE_ID = M.MOVIE_ID);
     ";
 
     private $initalLoadRatingSql = "
         INSERT INTO ipi_olap.dim_rating(RATING_ID, SOURCE, SCORE)
-        SELECT DISTINCT NULL, TITLE, SOURCE, IF (SOURCE = 'metascore', SCORE, FLOOR(CAST(SCORE as DECIMAL(9,2)) * 10)) AS SCORE
+        SELECT DISTINCT NULL, SOURCE, IF (SOURCE = 'metascore', SCORE, FLOOR(CAST(SCORE as DECIMAL(9,2)) * 10)) AS SCORE
         FROM ipi.rating;
     ";
 
